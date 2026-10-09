@@ -21,7 +21,8 @@ public sealed record ServiceState(
         {
         }
 
-        // Этап 1: без автоподбора включаемся на стратегии по умолчанию.
+        // Первый запуск до автоподбора: включаемся на стратегии по умолчанию,
+        // пользователь (или установщик) запускает «Подобрать» отдельно.
         state ??= new ServiceState(Enabled: true, StrategyId: catalog.Default);
         return state.StrategyId is not null && catalog.Find(state.StrategyId) is not null
             ? state

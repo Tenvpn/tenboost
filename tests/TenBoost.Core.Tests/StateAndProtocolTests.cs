@@ -35,9 +35,31 @@ public class StateAndProtocolTests
     [InlineData("{\"cmd\":\"status\"}", ControlCommand.Status)]
     [InlineData("{\"cmd\":\"enable\"}", ControlCommand.Enable)]
     [InlineData("{\"cmd\":\"disable\"}", ControlCommand.Disable)]
+    [InlineData("{\"cmd\":\"autopick\"}", ControlCommand.Autopick)]
     public void ParsesKnownCommands(string line, ControlCommand expected)
     {
         Assert.Equal(expected, ControlProtocol.ParseRequest(line).Command);
+    }
+
+    [Fact]
+    public void PickingResponseRoundTrips()
+    {
+        var response = new ControlResponse(true, true, EngineState.Picking, "a", "v", "подбор", new PickProgress(1, 3, "t"));
+
+        var json = System.Text.Json.JsonSerializer.Serialize(response, ControlProtocol.Json);
+        var back = System.Text.Json.JsonSerializer.Deserialize<ControlResponse>(json, ControlProtocol.Json);
+
+        Assert.Equal(response, back);
+        Assert.Contains("\"picking\"", json);
+    }
+
+    [Fact]
+    public void StatusWithoutPickHasNullProgress()
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(
+            new ControlResponse(true, false, EngineState.Stopped, null, "v", null), ControlProtocol.Json);
+
+        Assert.Null(System.Text.Json.JsonSerializer.Deserialize<ControlResponse>(json, ControlProtocol.Json)!.Pick);
     }
 
     [Theory]

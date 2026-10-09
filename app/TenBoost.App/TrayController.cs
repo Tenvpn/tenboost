@@ -13,6 +13,7 @@ internal sealed class TrayController : IDisposable
     private readonly App _app;
     private readonly NotifyIcon _icon;
     private readonly ToolStripMenuItem _toggle;
+    private readonly ToolStripMenuItem _pick;
     private readonly DispatcherTimer _timer;
     private readonly Dictionary<Color, Icon> _icons = [];
     private ControlResponse? _last;
@@ -23,8 +24,10 @@ internal sealed class TrayController : IDisposable
     {
         _app = app;
         _toggle = new ToolStripMenuItem("Включить", null, async (_, _) => await ToggleAsync()) { Enabled = false };
+        _pick = new ToolStripMenuItem("Подобрать стратегию", null, async (_, _) => await AutopickAsync()) { Enabled = false };
         var menu = new ContextMenuStrip();
         menu.Items.Add(_toggle);
+        menu.Items.Add(_pick);
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(new ToolStripMenuItem("О программе", null, (_, _) => ShowAbout()));
         menu.Items.Add(new ToolStripMenuItem("Выход", null, (_, _) => _app.Shutdown()));
@@ -78,12 +81,33 @@ internal sealed class TrayController : IDisposable
         }
     }
 
+    private async Task AutopickAsync()
+    {
+        if (_last is null || _busy)
+        {
+            return;
+        }
+
+        _busy = true;
+        _pick.Enabled = false;
+        try
+        {
+            // Служба подтверждает старт подбора; дальше прогресс приходит обычным опросом Status.
+            Apply(await ControlClient.SendAsync(ControlCommand.Autopick));
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
     private void Apply(ControlResponse? status)
     {
         _last = status;
         var (color, text) = status switch
         {
             null => (Color.Gray, "служба не отвечает"),
+            { State: EngineState.Picking } => (Color.FromArgb(0x2F, 0x6F, 0xED), PickText(status.Pick)),
             { Enabled: false } => (Color.Gray, "выключено"),
             { State: EngineState.Running } => (Color.FromArgb(0x2E, 0xB8, 0x5C), "включено"),
             { State: EngineState.Starting } => (Color.FromArgb(0xF2, 0xA9, 0x00), "запускается"),
@@ -95,8 +119,14 @@ internal sealed class TrayController : IDisposable
         var tooltip = "TenBoost — " + text;
         _icon.Text = tooltip.Length > 127 ? tooltip[..124] + "..." : tooltip;
         _toggle.Text = status is { Enabled: true } ? "Выключить" : "Включить";
-        _toggle.Enabled = status is not null && !_busy;
+        // Во время подбора обе команды недоступны: служба занята перебором.
+        var picking = status is { State: EngineState.Picking };
+        _toggle.Enabled = status is not null && !_busy && !picking;
+        _pick.Enabled = status is not null && !_busy && !picking;
     }
+
+    private static string PickText(PickProgress? pick) =>
+        pick is null ? "подбор…" : $"подбор {pick.Done + 1} из {pick.Total}";
 
     private Icon IconFor(Color color)
     {

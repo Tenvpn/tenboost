@@ -42,6 +42,7 @@ public enum ControlCommand
     Status,
     Enable,
     Disable,
+    Autopick,
 }
 
 public sealed record ControlRequest([property: JsonPropertyName("cmd")] ControlCommand Command);
@@ -52,7 +53,14 @@ public enum EngineState
     Starting,
     Running,
     Error,
+    Picking,
 }
+
+/// <summary>Прогресс автоподбора для трея: «проверяю N из M».</summary>
+public sealed record PickProgress(
+    [property: JsonPropertyName("done")] int Done,
+    [property: JsonPropertyName("total")] int Total,
+    [property: JsonPropertyName("current")] string? Current);
 
 public sealed record ControlResponse(
     [property: JsonPropertyName("ok")] bool Ok,
@@ -60,6 +68,7 @@ public sealed record ControlResponse(
     [property: JsonPropertyName("state")] EngineState State,
     [property: JsonPropertyName("strategy")] string? StrategyId,
     [property: JsonPropertyName("engine")] string EngineVersion,
-    [property: JsonPropertyName("message")] string? Message);
+    [property: JsonPropertyName("message")] string? Message,
+    [property: JsonPropertyName("pick")] PickProgress? Pick = null);
 
 public sealed class ControlProtocolException(string message) : Exception(message);
