@@ -1,0 +1,14 @@
+/bin/*
+!/bin/manifest.json
+/app/**/bin/
+/service/**/bin/
+/core/**/bin/
+/tests/**/bin/
+obj/
+/build/
+/out/
+*.user
+.vs/
+.vscode/
+__pycache__/
+TestResults/

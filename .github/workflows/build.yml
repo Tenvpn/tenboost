@@ -1,0 +1,79 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Версия
+        shell: pwsh
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          $v = if ($env:INPUT_VERSION) { $env:INPUT_VERSION.TrimStart('v') } else { "0.1.0-ci.${{ github.run_number }}" }
+          if ($v -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?$') { throw "недопустимая версия: $v" }
+          "VERSION=$v" >> $env:GITHUB_ENV
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Тесты
+        run: dotnet test tests/TenBoost.Core.Tests -c Release
+
+      - name: Движок и приложение
+        run: python -I tools/build_payload.py --out build/payload --version "${{ env.VERSION }}"
+
+      - name: Inno Setup
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup --no-progress -y
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+          & $iscc /Qp "/DAppVersion=$env:VERSION" "/DPayload=$env:GITHUB_WORKSPACE\build\payload" installer\TenBoost.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: SHA256
+        shell: pwsh
+        run: |
+          $lines = @()
+          $lines += "{0}  {1}" -f (Get-FileHash out\TenBoost-Setup.exe -Algorithm SHA256).Hash.ToLower(), 'TenBoost-Setup.exe'
+          $root = (Resolve-Path build\payload).Path
+          Get-ChildItem build\payload -Recurse -File | Sort-Object FullName | ForEach-Object {
+            $rel = $_.FullName.Substring($root.Length + 1).Replace('\', '/')
+            $lines += "{0}  payload/{1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $rel
+          }
+          $lines | Set-Content -Encoding utf8NoBOM out\SHA256SUMS.txt
+          Get-Content out\SHA256SUMS.txt -TotalCount 1
+          "{0:N1} MB" -f ((Get-Item out\TenBoost-Setup.exe).Length / 1MB)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TenBoost-Setup
+          path: |
+            out/TenBoost-Setup.exe
+            out/SHA256SUMS.txt
+          if-no-files-found: error

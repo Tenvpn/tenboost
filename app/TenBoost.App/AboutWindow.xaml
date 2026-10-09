@@ -1,0 +1,28 @@
+<Window x:Class="TenBoost.App.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="О программе TenBoost" Width="560" Height="520"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip">
+  <DockPanel Margin="16">
+    <StackPanel DockPanel.Dock="Top">
+      <TextBlock FontSize="20" FontWeight="SemiBold" Text="TenBoost" />
+      <TextBlock Margin="0,2,0,0" Text="Ускоритель YouTube и Discord" />
+      <TextBlock x:Name="VersionText" Margin="0,8,0,0" />
+      <TextBlock x:Name="EngineText" />
+      <TextBlock Margin="0,8,0,0">
+        <Hyperlink x:Name="RepoLink" RequestNavigate="OnNavigate">Исходный код TenBoost</Hyperlink>
+      </TextBlock>
+      <TextBlock Margin="0,12,0,0" FontWeight="SemiBold" Text="Движок: zapret2 © bol-van, лицензия MIT" />
+      <TextBlock TextWrapping="Wrap" Margin="0,2,0,0">
+        Драйвер перехвата пакетов WinDivert (LGPLv3 / GPLv2,
+        <Hyperlink NavigateUri="https://github.com/basil00/WinDivert" RequestNavigate="OnNavigate">исходники</Hyperlink>),
+        библиотека Cygwin (LGPLv3,
+        <Hyperlink NavigateUri="https://cygwin.com/git.html" RequestNavigate="OnNavigate">исходники</Hyperlink>).
+        Тексты лицензий — в папке licenses рядом с программой.
+      </TextBlock>
+    </StackPanel>
+    <Button DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="0,12,0,0" Padding="16,4" IsCancel="True" IsDefault="True" Click="OnClose" Content="Закрыть" />
+    <TextBox x:Name="LicenseText" Margin="0,12,0,0" IsReadOnly="True" TextWrapping="Wrap"
+             VerticalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="11" />
+  </DockPanel>
+</Window>

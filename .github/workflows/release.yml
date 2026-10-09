@@ -1,0 +1,42 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      version: ${{ github.ref_name }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: TenBoost-Setup
+          path: out
+
+      - name: Черновик релиза
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          setup_sha=$(head -n1 out/SHA256SUMS.txt | cut -d' ' -f1)
+          {
+            echo "Ускоритель YouTube и Discord для Windows 10/11 x64."
+            echo
+            echo "**SHA256 \`TenBoost-Setup.exe\`:** \`${setup_sha}\`"
+            echo
+            echo "Хэши всех файлов — \`SHA256SUMS.txt\`. Собрано в GitHub Actions: ${RUN_URL}"
+            echo
+            echo "Движок: zapret2 © bol-van, лицензия MIT."
+          } > notes.md
+          gh release create "$TAG" out/TenBoost-Setup.exe out/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" --draft --title "TenBoost $TAG" --notes-file notes.md
