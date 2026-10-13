@@ -14,10 +14,6 @@ on:
 permissions:
   contents: read
 
-env:
-  # консоль раннера в cp1252, а скрипты сборки пишут по-русски
-  PYTHONUTF8: '1'
-
 jobs:
   build:
     runs-on: windows-2022

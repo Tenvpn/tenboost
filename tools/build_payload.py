@@ -75,4 +75,7 @@ def main() -> int:
 
 
 if __name__ == '__main__':
+    # под -I PYTHONUTF8 не действует, а консоль Windows-раннера в cp1252
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
     sys.exit(main())
