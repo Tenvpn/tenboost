@@ -26,7 +26,7 @@ public partial class MainWindow : Window
     private readonly Dictionary<string, BitmapImage> _frames = [];
     private readonly DispatcherTimer _typing = new();
     private readonly Random _random = new();
-    private readonly Dictionary<string, string> _strategyTitles;
+    private readonly IReadOnlyList<(string Id, string Title)> _strategies;
     private Image _front;
     private Image _back;
     private Scene? _scene;
@@ -39,7 +39,7 @@ public partial class MainWindow : Window
         _hub = hub;
         _front = LayerA;
         _back = LayerB;
-        _strategyTitles = LoadStrategyTitles();
+        _strategies = LoadStrategies();
         var version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "?";
         VersionText.Text = "версия " + version.Split('+')[0];
 
@@ -111,8 +111,9 @@ public partial class MainWindow : Window
         PickButton.IsEnabled = idle;
 
         StrategyText.Text = status?.StrategyId is { } id
-            ? "Настройка: " + (_strategyTitles.TryGetValue(id, out var title) ? title : id)
+            ? "Настройка: " + TitleOf(id) + "  ▾"
             : "";
+        StrategyButton.IsEnabled = idle && _strategies.Count > 1;
 
         ShowScene(view.Scene);
     }
@@ -215,16 +216,51 @@ public partial class MainWindow : Window
 
     private Brush Res(string key) => (Brush)FindResource(key);
 
-    private static Dictionary<string, string> LoadStrategyTitles()
+    private string TitleOf(string id) => _strategies.FirstOrDefault(s => s.Id == id).Title ?? id;
+
+    /// <summary>Каталог читаем сами, только чтобы показать названия; запускает стратегии служба по своему каталогу.</summary>
+    private static IReadOnlyList<(string Id, string Title)> LoadStrategies()
     {
         try
         {
-            return Catalog.Load(InstallLayout.ForCurrentProcess().CatalogFile).Strategies.ToDictionary(s => s.Id, s => s.Title);
+            return Catalog.Load(InstallLayout.ForCurrentProcess().CatalogFile).Strategies.Select(s => (s.Id, s.Title)).ToList();
         }
         catch (Exception e) when (e is System.IO.IOException or UnauthorizedAccessException or CatalogException or System.Text.Json.JsonException)
         {
             return [];
         }
+    }
+
+    private void OnStrategyMenu(object sender, RoutedEventArgs e)
+    {
+        StrategyList.Children.Clear();
+        var current = _hub.Last?.StrategyId;
+        foreach (var (id, title) in _strategies)
+        {
+            var row = new DockPanel();
+            var check = new TextBlock
+            {
+                Text = id == current ? "✓" : "",
+                Foreground = Res("Accent"),
+                Width = 18,
+                FontWeight = FontWeights.SemiBold,
+            };
+            DockPanel.SetDock(check, Dock.Left);
+            row.Children.Add(check);
+            row.Children.Add(new TextBlock { Text = title });
+            var item = new Button { Style = (Style)FindResource("MenuButton"), Content = row };
+            item.Click += async (_, _) =>
+            {
+                StrategyPopup.IsOpen = false;
+                if (id != current)
+                {
+                    await _hub.SelectAsync(id);
+                }
+            };
+            StrategyList.Children.Add(item);
+        }
+
+        StrategyPopup.IsOpen = true;
     }
 
     private void OnDrag(object sender, MouseButtonEventArgs e)

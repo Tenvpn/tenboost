@@ -66,8 +66,21 @@
         <Button x:Name="ToggleButton" Style="{StaticResource PrimaryButton}" Content="Включить" Click="OnToggle" />
         <Button x:Name="PickButton" Style="{StaticResource OutlineButton}" Margin="0,10,0,0"
                 Content="Подобрать настройку заново" Click="OnPick" />
-        <TextBlock x:Name="StrategyText" Margin="0,10,0,0" HorizontalAlignment="Center" FontSize="12"
-                   Foreground="{StaticResource MutedDeep}" TextTrimming="CharacterEllipsis" />
+        <!-- Ручной выбор для тех, кто хочет сам: по умолчанию настройку подбирает автоподбор. -->
+        <Button x:Name="StrategyButton" Style="{StaticResource LinkButton}" Margin="0,12,0,0" HorizontalAlignment="Center"
+                FontSize="12" Click="OnStrategyMenu" ToolTip="Выбрать настройку вручную">
+          <TextBlock x:Name="StrategyText" TextTrimming="CharacterEllipsis" />
+        </Button>
+        <Popup x:Name="StrategyPopup" PlacementTarget="{Binding ElementName=StrategyButton}" Placement="Bottom"
+               HorizontalOffset="-60" VerticalOffset="6" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+          <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource BorderStrong}" BorderThickness="1"
+                  CornerRadius="{StaticResource RadiusSm}" Padding="6" MinWidth="240">
+            <StackPanel>
+              <TextBlock Margin="10,6,10,6" FontSize="11.5" Foreground="{StaticResource MutedDeep}" Text="Настройка обхода" />
+              <StackPanel x:Name="StrategyList" />
+            </StackPanel>
+          </Border>
+        </Popup>
       </StackPanel>
 
       <!-- TENVPN: когда нужен не только YouTube. -->

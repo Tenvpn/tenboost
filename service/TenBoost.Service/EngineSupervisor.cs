@@ -26,6 +26,7 @@ public sealed class EngineSupervisor(InstallLayout layout, NetworkProbe probe, I
     private EngineState _state = EngineState.Stopped;
     private string? _message;
     private bool _autopick;
+    private bool _restart;
     private PickProgress? _pick;
 
     public ControlResponse Status()
@@ -49,6 +50,33 @@ public sealed class EngineSupervisor(InstallLayout layout, NetworkProbe probe, I
         }
 
         logger.LogInformation("команда: подобрать стратегию");
+        _wake.Release();
+        return Status();
+    }
+
+    /// <summary>Ручной выбор: только id из своего каталога, аргументы по каналу не приходят.</summary>
+    public ControlResponse SelectStrategy(string id)
+    {
+        lock (_gate)
+        {
+            if (_catalog?.Find(id) is null || _state == EngineState.Picking)
+            {
+                return Status() with { Ok = false };
+            }
+
+            _desired = new ServiceState(Enabled: true, StrategyId: id);
+            _failures.Clear();
+            if (_state == EngineState.Error)
+            {
+                _state = EngineState.Stopped;
+                _message = null;
+            }
+
+            _restart = true;
+            TrySaveState();
+        }
+
+        logger.LogInformation("команда: выбрать стратегию {Strategy}", id);
         _wake.Release();
         return Status();
     }
@@ -124,7 +152,7 @@ public sealed class EngineSupervisor(InstallLayout layout, NetworkProbe probe, I
     {
         while (!ct.IsCancellationRequested)
         {
-            bool enabled, autopick;
+            bool enabled, autopick, restart;
             EngineState state;
             lock (_gate)
             {
@@ -132,12 +160,22 @@ public sealed class EngineSupervisor(InstallLayout layout, NetworkProbe probe, I
                 state = _state;
                 autopick = _autopick;
                 _autopick = false;
+                restart = _restart;
+                _restart = false;
             }
 
             if (autopick)
             {
                 await PickAsync(ct);
                 continue;
+            }
+
+            // Сменили стратегию руками: снимаем движок, ниже он поднимется уже на новой.
+            if (restart && _process is not null)
+            {
+                StopProcess();
+                SetState(EngineState.Stopped, null);
+                state = EngineState.Stopped;
             }
 
             if (enabled && _process is null && state is not (EngineState.Error or EngineState.Picking))

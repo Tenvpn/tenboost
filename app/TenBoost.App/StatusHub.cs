@@ -54,6 +54,9 @@ internal sealed class StatusHub : IDisposable
     // Служба подтверждает старт подбора; дальше прогресс приходит обычным опросом Status.
     public Task AutopickAsync() => Last is null ? Task.CompletedTask : SendAsync(ControlCommand.Autopick);
 
+    /// <summary>Ручной выбор стратегии из каталога.</summary>
+    public Task SelectAsync(string strategyId) => Last is null ? Task.CompletedTask : SendAsync(ControlCommand.Select, strategyId);
+
     private async Task RefreshAsync()
     {
         if (Busy)
@@ -64,7 +67,7 @@ internal sealed class StatusHub : IDisposable
         Apply(await ControlClient.SendAsync(ControlCommand.Status));
     }
 
-    private async Task SendAsync(ControlCommand command)
+    private async Task SendAsync(ControlCommand command, string? strategyId = null)
     {
         if (Busy)
         {
@@ -75,7 +78,7 @@ internal sealed class StatusHub : IDisposable
         Changed?.Invoke();
         try
         {
-            Apply(await ControlClient.SendAsync(command));
+            Apply(await ControlClient.SendAsync(command, strategyId));
         }
         finally
         {

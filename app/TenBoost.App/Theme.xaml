@@ -153,6 +153,34 @@
     </Setter>
   </Style>
 
+  <!-- Пункт выпадающего списка. -->
+  <Style x:Key="MenuButton" TargetType="Button">
+    <Setter Property="Foreground" Value="{StaticResource Text}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="FontFamily" Value="{StaticResource Body}" />
+    <Setter Property="FontSize" Value="13.5" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="Box" CornerRadius="8" Background="{TemplateBinding Background}" Padding="10,8">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Box" Property="Background" Value="{StaticResource Elevated}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="Box" Property="Background" Value="{StaticResource Elevated}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
   <Style x:Key="Lime" TargetType="ProgressBar">
     <Setter Property="Height" Value="6" />
     <Setter Property="Foreground" Value="{StaticResource Accent}" />

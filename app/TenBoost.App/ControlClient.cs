@@ -11,14 +11,14 @@ internal static class ControlClient
 {
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(3);
 
-    public static async Task<ControlResponse?> SendAsync(ControlCommand command)
+    public static async Task<ControlResponse?> SendAsync(ControlCommand command, string? strategyId = null)
     {
         using var cts = new CancellationTokenSource(Timeout);
         try
         {
             await using var pipe = new NamedPipeClientStream(".", ControlProtocol.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
             await pipe.ConnectAsync(cts.Token);
-            var request = JsonSerializer.Serialize(new ControlRequest(command), ControlProtocol.Json) + "\n";
+            var request = JsonSerializer.Serialize(new ControlRequest(command, strategyId), ControlProtocol.Json) + "\n";
             await pipe.WriteAsync(Encoding.UTF8.GetBytes(request), cts.Token);
             await pipe.FlushAsync(cts.Token);
 

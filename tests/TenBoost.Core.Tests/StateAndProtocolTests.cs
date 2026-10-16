@@ -42,6 +42,14 @@ public class StateAndProtocolTests
     }
 
     [Fact]
+    public void SelectCarriesStrategyId()
+    {
+        var request = ControlProtocol.ParseRequest("{\"cmd\":\"select\",\"strategy\":\"discord_md5_disorder\"}");
+
+        Assert.Equal(new ControlRequest(ControlCommand.Select, "discord_md5_disorder"), request);
+    }
+
+    [Fact]
     public void PickingResponseRoundTrips()
     {
         var response = new ControlResponse(true, true, EngineState.Picking, "a", "v", "подбор", new PickProgress(1, 3, "t"));
@@ -68,6 +76,9 @@ public class StateAndProtocolTests
     [InlineData("{\"cmd\":\"run\",\"args\":\"calc.exe\"}")]
     [InlineData("{\"cmd\":7}")]
     [InlineData("not json")]
+    [InlineData("{\"cmd\":\"select\"}")]
+    [InlineData("{\"cmd\":\"select\",\"strategy\":\"\"}")]
+    [InlineData("{\"cmd\":\"select\",\"strategy\":\"--wf-tcp=1 calc\"}")]
     public void RejectsUnknownCommands(string? line)
     {
         Assert.Throws<ControlProtocolException>(() => ControlProtocol.ParseRequest(line));

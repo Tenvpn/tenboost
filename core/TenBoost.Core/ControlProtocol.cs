@@ -6,8 +6,9 @@ namespace TenBoost.Core;
 /// <summary>
 /// Канал трей → служба. Одна строка JSON в каждую сторону. Список команд закрыт:
 /// аргументы winws2 по каналу не передаются никогда, иначе любой пользователь запускал бы через службу что угодно от SYSTEM.
+/// «Выбрать» передаёт только id стратегии; служба ищет его в своём каталоге.
 /// </summary>
-public static class ControlProtocol
+public static partial class ControlProtocol
 {
     public const string PipeName = "TenBoost.Control";
 
@@ -25,16 +26,27 @@ public static class ControlProtocol
             throw new ControlProtocolException("пустой или слишком длинный запрос");
         }
 
+        ControlRequest request;
         try
         {
-            return JsonSerializer.Deserialize<ControlRequest>(line, Json)
+            request = JsonSerializer.Deserialize<ControlRequest>(line, Json)
                 ?? throw new ControlProtocolException("пустой запрос");
         }
         catch (JsonException)
         {
             throw new ControlProtocolException("неизвестная команда");
         }
+
+        if (request.Command == ControlCommand.Select && (request.StrategyId is null || !StrategyIdPattern().IsMatch(request.StrategyId)))
+        {
+            throw new ControlProtocolException("не указана стратегия");
+        }
+
+        return request;
     }
+
+    [System.Text.RegularExpressions.GeneratedRegex("^[a-z0-9_]{1,64}$")]
+    private static partial System.Text.RegularExpressions.Regex StrategyIdPattern();
 }
 
 public enum ControlCommand
@@ -43,9 +55,13 @@ public enum ControlCommand
     Enable,
     Disable,
     Autopick,
+    /// <summary>Ручной выбор стратегии из каталога: включает обход на ней и перезапускает движок.</summary>
+    Select,
 }
 
-public sealed record ControlRequest([property: JsonPropertyName("cmd")] ControlCommand Command);
+public sealed record ControlRequest(
+    [property: JsonPropertyName("cmd")] ControlCommand Command,
+    [property: JsonPropertyName("strategy")] string? StrategyId = null);
 
 public enum EngineState
 {

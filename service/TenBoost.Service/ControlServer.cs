@@ -77,6 +77,7 @@ public sealed class ControlServer(EngineSupervisor supervisor, ILogger<ControlSe
                     ControlCommand.Enable => supervisor.SetEnabled(true),
                     ControlCommand.Disable => supervisor.SetEnabled(false),
                     ControlCommand.Autopick => supervisor.RequestAutopick(),
+                    ControlCommand.Select => supervisor.SelectStrategy(request.StrategyId!),
                     _ => supervisor.Status(),
                 };
             }
