@@ -153,6 +153,13 @@ begin
     StopService(ServiceName);
 end;
 
+{ Загруженный драйвер держит WinDivert64.sys: без выгрузки обновление падает на «DeleteFile: код 5».
+  Выгружается, только когда им никто не пользуется, поэтому зовём после остановки своих и чужих. }
+procedure UnloadDriver;
+begin
+  Sc('stop windivert');
+end;
+
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
   Found: String;
@@ -165,7 +172,10 @@ begin
 
   Found := DetectConflicts(Services, Processes);
   if Found = '' then
+  begin
+    UnloadDriver;
     exit;
+  end;
 
   if SuppressibleMsgBox(
        'На компьютере уже работает программа, которая перехватывает сетевые пакеты:' + #13#10#13#10 + Found + #13#10 +
@@ -184,6 +194,7 @@ begin
   end;
   for I := 0 to GetArrayLength(Processes) - 1 do
     KillProcess(Processes[I]);
+  UnloadDriver;
 end;
 
 procedure RegisterService;
