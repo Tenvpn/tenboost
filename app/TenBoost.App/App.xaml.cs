@@ -43,7 +43,7 @@ public partial class App : Application
             return;
         }
 
-        _about = new AboutWindow(_hub?.Last?.EngineVersion);
+        _about = new AboutWindow();
         _about.Closed += (_, _) => _about = null;
         _about.Show();
         _about.Activate();
