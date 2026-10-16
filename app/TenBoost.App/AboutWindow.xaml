@@ -1,28 +1,42 @@
 <Window x:Class="TenBoost.App.AboutWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="О программе TenBoost" Width="560" Height="520"
-        WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip">
-  <DockPanel Margin="16">
+        Title="О программе TenBoost" Width="560" Height="540"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
+        Icon="pack://application:,,,/Assets/TenBoost.ico"
+        Background="{StaticResource Ink}" Foreground="{StaticResource Text}"
+        FontFamily="{StaticResource Body}" FontSize="13" TextOptions.TextFormattingMode="Ideal">
+  <Window.Resources>
+    <Style TargetType="Hyperlink">
+      <Setter Property="Foreground" Value="{StaticResource CocoaText}" />
+    </Style>
+  </Window.Resources>
+  <DockPanel Margin="24,20">
     <StackPanel DockPanel.Dock="Top">
-      <TextBlock FontSize="20" FontWeight="SemiBold" Text="TenBoost" />
-      <TextBlock Margin="0,2,0,0" Text="Ускоритель YouTube и Discord" />
-      <TextBlock x:Name="VersionText" Margin="0,8,0,0" />
-      <TextBlock x:Name="EngineText" />
-      <TextBlock Margin="0,8,0,0">
+      <TextBlock FontFamily="{StaticResource Display}" FontWeight="ExtraBold" FontSize="22">
+        <Run Text="Ten" /><Run Text="Boost" Foreground="{StaticResource Accent}" />
+      </TextBlock>
+      <TextBlock Margin="0,2,0,0" Foreground="{StaticResource Muted}" Text="Ускоритель YouTube и Discord" />
+      <TextBlock x:Name="VersionText" Margin="0,12,0,0" FontFamily="{StaticResource Data}" FontSize="12" Foreground="{StaticResource Muted}" />
+      <TextBlock x:Name="EngineText" FontFamily="{StaticResource Data}" FontSize="12" Foreground="{StaticResource Muted}" />
+      <TextBlock Margin="0,10,0,0">
         <Hyperlink x:Name="RepoLink" RequestNavigate="OnNavigate">Исходный код TenBoost</Hyperlink>
       </TextBlock>
-      <TextBlock Margin="0,12,0,0" FontWeight="SemiBold" Text="Движок: zapret2 © bol-van, лицензия MIT" />
-      <TextBlock TextWrapping="Wrap" Margin="0,2,0,0">
+      <TextBlock Margin="0,14,0,0" FontWeight="SemiBold" Text="Движок: zapret2 © bol-van, лицензия MIT" />
+      <TextBlock TextWrapping="Wrap" Margin="0,4,0,0" Foreground="{StaticResource Muted}">
         Драйвер перехвата пакетов WinDivert (LGPLv3 / GPLv2,
         <Hyperlink NavigateUri="https://github.com/basil00/WinDivert" RequestNavigate="OnNavigate">исходники</Hyperlink>),
         библиотека Cygwin (LGPLv3,
-        <Hyperlink NavigateUri="https://cygwin.com/git.html" RequestNavigate="OnNavigate">исходники</Hyperlink>).
+        <Hyperlink NavigateUri="https://cygwin.com/git.html" RequestNavigate="OnNavigate">исходники</Hyperlink>),
+        шрифты Geologica и Onest (SIL OFL 1.1).
         Тексты лицензий — в папке licenses рядом с программой.
       </TextBlock>
     </StackPanel>
-    <Button DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="0,12,0,0" Padding="16,4" IsCancel="True" IsDefault="True" Click="OnClose" Content="Закрыть" />
-    <TextBox x:Name="LicenseText" Margin="0,12,0,0" IsReadOnly="True" TextWrapping="Wrap"
-             VerticalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="11" />
+    <Button DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="0,14,0,0" Width="120"
+            Style="{StaticResource OutlineButton}" IsCancel="True" IsDefault="True" Click="OnClose" Content="Закрыть" />
+    <TextBox x:Name="LicenseText" Margin="0,14,0,0" IsReadOnly="True" TextWrapping="Wrap"
+             VerticalScrollBarVisibility="Auto" FontFamily="{StaticResource Data}" FontSize="11"
+             Background="{StaticResource Surface}" Foreground="{StaticResource Muted}"
+             BorderBrush="{StaticResource Border}" Padding="10,8" />
   </DockPanel>
 </Window>

@@ -1,136 +1,86 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
-using System.Windows.Threading;
 using TenBoost.Core;
 
 namespace TenBoost.App;
 
 internal sealed class TrayController : IDisposable
 {
-    private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(5);
-
     private readonly App _app;
+    private readonly StatusHub _hub;
     private readonly NotifyIcon _icon;
     private readonly ToolStripMenuItem _toggle;
     private readonly ToolStripMenuItem _pick;
-    private readonly DispatcherTimer _timer;
+    private readonly Bitmap _face;
     private readonly Dictionary<Color, Icon> _icons = [];
-    private ControlResponse? _last;
-    private AboutWindow? _about;
-    private bool _busy;
 
-    public TrayController(App app)
+    public TrayController(App app, StatusHub hub)
     {
         _app = app;
-        _toggle = new ToolStripMenuItem("Включить", null, async (_, _) => await ToggleAsync()) { Enabled = false };
-        _pick = new ToolStripMenuItem("Подобрать стратегию", null, async (_, _) => await AutopickAsync()) { Enabled = false };
+        _hub = hub;
+        _face = LoadFace();
+        _toggle = new ToolStripMenuItem("Включить", null, async (_, _) => await _hub.ToggleAsync()) { Enabled = false };
+        _pick = new ToolStripMenuItem("Подобрать настройку", null, async (_, _) => await _hub.AutopickAsync()) { Enabled = false };
+        var open = new ToolStripMenuItem("Открыть TenBoost", null, (_, _) => _app.ShowMain());
+        open.Font = new Font(open.Font, System.Drawing.FontStyle.Bold);
         var menu = new ContextMenuStrip();
+        menu.Items.Add(open);
+        menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(_toggle);
         menu.Items.Add(_pick);
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add(new ToolStripMenuItem("О программе", null, (_, _) => ShowAbout()));
+        menu.Items.Add(new ToolStripMenuItem("О программе", null, (_, _) => _app.ShowAbout()));
         menu.Items.Add(new ToolStripMenuItem("Выход", null, (_, _) => _app.Shutdown()));
 
         _icon = new NotifyIcon { ContextMenuStrip = menu, Visible = true };
-        Apply(null);
-
-        _timer = new DispatcherTimer { Interval = PollInterval };
-        _timer.Tick += async (_, _) => await RefreshAsync();
-        _timer.Start();
-        _ = RefreshAsync();
+        _icon.MouseClick += (_, e) =>
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                _app.ShowMain();
+            }
+        };
+        _hub.Changed += Apply;
+        Apply();
     }
 
     public void Dispose()
     {
-        _timer.Stop();
+        _hub.Changed -= Apply;
         _icon.Visible = false;
         _icon.Dispose();
+        _face.Dispose();
         foreach (var icon in _icons.Values)
         {
             icon.Dispose();
         }
     }
 
-    private async Task RefreshAsync()
+    private void Apply()
     {
-        if (_busy)
-        {
-            return;
-        }
-
-        Apply(await ControlClient.SendAsync(ControlCommand.Status));
-    }
-
-    private async Task ToggleAsync()
-    {
-        if (_last is null || _busy)
-        {
-            return;
-        }
-
-        _busy = true;
-        _toggle.Enabled = false;
-        try
-        {
-            Apply(await ControlClient.SendAsync(_last.Enabled ? ControlCommand.Disable : ControlCommand.Enable));
-        }
-        finally
-        {
-            _busy = false;
-        }
-    }
-
-    private async Task AutopickAsync()
-    {
-        if (_last is null || _busy)
-        {
-            return;
-        }
-
-        _busy = true;
-        _pick.Enabled = false;
-        try
-        {
-            // Служба подтверждает старт подбора; дальше прогресс приходит обычным опросом Status.
-            Apply(await ControlClient.SendAsync(ControlCommand.Autopick));
-        }
-        finally
-        {
-            _busy = false;
-        }
-    }
-
-    private void Apply(ControlResponse? status)
-    {
-        _last = status;
-        var (color, text) = status switch
-        {
-            null => (Color.Gray, "служба не отвечает"),
-            { State: EngineState.Picking } => (Color.FromArgb(0x2F, 0x6F, 0xED), PickText(status.Pick)),
-            { Enabled: false } => (Color.Gray, "выключено"),
-            { State: EngineState.Running } => (Color.FromArgb(0x2E, 0xB8, 0x5C), "включено"),
-            { State: EngineState.Starting } => (Color.FromArgb(0xF2, 0xA9, 0x00), "запускается"),
-            { State: EngineState.Error } => (Color.FromArgb(0xD9, 0x3B, 0x3B), "ошибка: " + status.Message),
-            _ => (Color.Gray, "выключено"),
-        };
-
-        _icon.Icon = IconFor(color);
-        var tooltip = "TenBoost — " + text;
+        var status = _hub.Last;
+        var view = StatusView.From(status);
+        _icon.Icon = IconFor(view.Dot);
+        var tooltip = "TenBoost — " + view.Short;
         _icon.Text = tooltip.Length > 127 ? tooltip[..124] + "..." : tooltip;
         _toggle.Text = status is { Enabled: true } ? "Выключить" : "Включить";
         // Во время подбора обе команды недоступны: служба занята перебором.
-        var picking = status is { State: EngineState.Picking };
-        _toggle.Enabled = status is not null && !_busy && !picking;
-        _pick.Enabled = status is not null && !_busy && !picking;
+        _toggle.Enabled = status is not null && !_hub.Busy && !_hub.Picking;
+        _pick.Enabled = status is not null && !_hub.Busy && !_hub.Picking;
     }
 
-    private static string PickText(PickProgress? pick) =>
-        pick is null ? "подбор…" : $"подбор {pick.Done + 1} из {pick.Total}";
-
-    private Icon IconFor(Color color)
+    private static Bitmap LoadFace()
     {
-        if (_icons.TryGetValue(color, out var cached))
+        var info = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/Assets/tray.png"));
+        using var stream = info.Stream;
+        return new Bitmap(stream);
+    }
+
+    /// <summary>Морда Фера и точка состояния в правом нижнем углу: лайм — работает, серый — выключено.</summary>
+    private Icon IconFor(Color dot)
+    {
+        if (_icons.TryGetValue(dot, out var cached))
         {
             return cached;
         }
@@ -139,29 +89,16 @@ internal sealed class TrayController : IDisposable
         using (var g = Graphics.FromImage(bitmap))
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
-            using var brush = new SolidBrush(color);
-            g.FillEllipse(brush, 2, 2, 28, 28);
-            using var font = new Font(FontFamily.GenericSansSerif, 15, System.Drawing.FontStyle.Bold, GraphicsUnit.Pixel);
-            var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-            g.DrawString("T", font, Brushes.White, new RectangleF(0, 1, 32, 32), format);
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.DrawImage(_face, 0, 0, 32, 32);
+            using var ring = new SolidBrush(Color.FromArgb(0x0C, 0x10, 0x0E));
+            g.FillEllipse(ring, 18, 18, 14, 14);
+            using var brush = new SolidBrush(dot);
+            g.FillEllipse(brush, 20, 20, 10, 10);
         }
 
         var icon = Icon.FromHandle(bitmap.GetHicon());
-        _icons[color] = icon;
+        _icons[dot] = icon;
         return icon;
-    }
-
-    private void ShowAbout()
-    {
-        if (_about is { IsLoaded: true })
-        {
-            _about.Activate();
-            return;
-        }
-
-        _about = new AboutWindow(_last?.EngineVersion);
-        _about.Closed += (_, _) => _about = null;
-        _about.Show();
-        _about.Activate();
     }
 }

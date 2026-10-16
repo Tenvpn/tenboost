@@ -24,6 +24,8 @@ STATIC = {
     'licenses/WinDivert-LICENSE.txt': 'licenses/WinDivert-LICENSE.txt',
     'licenses/LGPL-3.0.txt': 'licenses/LGPL-3.0.txt',
     'licenses/GPL-3.0.txt': 'licenses/GPL-3.0.txt',
+    'licenses/Geologica-OFL.txt': 'licenses/Geologica-OFL.txt',
+    'licenses/Onest-OFL.txt': 'licenses/Onest-OFL.txt',
 }
 
 

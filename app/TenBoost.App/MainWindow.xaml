@@ -1,0 +1,96 @@
+<Window x:Class="TenBoost.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="TenBoost" Width="424" SizeToContent="Height"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen"
+        Icon="pack://application:,,,/Assets/TenBoost.ico"
+        FontFamily="{StaticResource Body}" Foreground="{StaticResource Text}"
+        TextOptions.TextFormattingMode="Ideal" UseLayoutRounding="True">
+  <Border Margin="12" CornerRadius="{StaticResource Radius}" Background="{StaticResource Ink}"
+          BorderBrush="{StaticResource BorderStrong}" BorderThickness="1">
+    <Border.Effect>
+      <DropShadowEffect BlurRadius="24" ShadowDepth="6" Direction="270" Opacity="0.45" Color="Black" />
+    </Border.Effect>
+    <StackPanel>
+
+      <!-- Заголовок: за него окно таскается. -->
+      <DockPanel Background="Transparent" Margin="20,12,10,0" MouseLeftButtonDown="OnDrag">
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+          <Button Style="{StaticResource ChromeButton}" Content="&#xE921;" ToolTip="Свернуть" Click="OnMinimize" />
+          <Button Style="{StaticResource ChromeButton}" Content="&#xE8BB;" ToolTip="Спрятать в трей" Click="OnHide" />
+        </StackPanel>
+        <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource Display}" FontWeight="ExtraBold" FontSize="17">
+          <Run Text="Ten" /><Run Text="Boost" Foreground="{StaticResource Accent}" />
+        </TextBlock>
+      </DockPanel>
+
+      <!-- Фер за компом. Свечение — единственное место, где лайм работает как атмосфера. -->
+      <Grid Height="290" Margin="0,4,0,0">
+        <Ellipse x:Name="Glow" Width="330" Height="250" Opacity="0" IsHitTestVisible="False">
+          <Ellipse.Fill>
+            <RadialGradientBrush>
+              <GradientStop Color="#29B6E32E" Offset="0" />
+              <GradientStop Color="#14B6E32E" Offset="0.55" />
+              <GradientStop Color="#00B6E32E" Offset="1" />
+            </RadialGradientBrush>
+          </Ellipse.Fill>
+        </Ellipse>
+        <Grid x:Name="Mascot" Width="300" RenderTransformOrigin="0.5,1">
+          <Grid.RenderTransform>
+            <ScaleTransform x:Name="Breath" />
+          </Grid.RenderTransform>
+          <Image x:Name="LayerA" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" />
+          <Image x:Name="LayerB" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Opacity="0" />
+        </Grid>
+      </Grid>
+
+      <!-- Состояние. -->
+      <StackPanel Margin="28,6,28,0">
+        <Border x:Name="Badge" HorizontalAlignment="Left" CornerRadius="999" Padding="10,4,12,5">
+          <StackPanel Orientation="Horizontal">
+            <Ellipse x:Name="BadgeDot" Width="7" Height="7" Margin="0,1,7,0" VerticalAlignment="Center" />
+            <TextBlock x:Name="BadgeText" FontSize="12" FontWeight="Medium" />
+          </StackPanel>
+        </Border>
+        <TextBlock x:Name="TitleText" Margin="0,10,0,0" FontFamily="{StaticResource Display}" FontWeight="Bold"
+                   FontSize="25" Foreground="{StaticResource Cream}" TextWrapping="Wrap" />
+        <TextBlock x:Name="HintText" Margin="0,4,0,0" FontSize="14" Foreground="{StaticResource Muted}" TextWrapping="Wrap" />
+        <ProgressBar x:Name="PickBar" Style="{StaticResource Lime}" Margin="0,12,0,0" Maximum="1" Visibility="Collapsed" />
+        <TextBlock x:Name="DetailText" Margin="0,8,0,0" FontFamily="{StaticResource Data}" FontSize="11.5"
+                   Foreground="{StaticResource MutedDeep}" TextWrapping="Wrap" Visibility="Collapsed" />
+      </StackPanel>
+
+      <!-- Действия: одна первичная кнопка, остальное контурное. -->
+      <StackPanel Margin="28,18,28,0">
+        <Button x:Name="ToggleButton" Style="{StaticResource PrimaryButton}" Content="Включить" Click="OnToggle" />
+        <Button x:Name="PickButton" Style="{StaticResource OutlineButton}" Margin="0,10,0,0"
+                Content="Подобрать настройку заново" Click="OnPick" />
+        <TextBlock x:Name="StrategyText" Margin="0,10,0,0" HorizontalAlignment="Center" FontSize="12"
+                   Foreground="{StaticResource MutedDeep}" TextTrimming="CharacterEllipsis" />
+      </StackPanel>
+
+      <!-- TENVPN: когда нужен не только YouTube. -->
+      <Border Margin="20,20,20,0" Padding="18,16" CornerRadius="{StaticResource Radius}"
+              Background="{StaticResource Surface}" BorderBrush="{StaticResource Border}" BorderThickness="1">
+        <DockPanel>
+          <Button DockPanel.Dock="Right" Style="{StaticResource OutlineButton}" Height="38" Padding="0"
+                  Width="112" VerticalAlignment="Center" Margin="12,0,0,0" Content="Попробовать" Click="OnTenvpn" />
+          <StackPanel>
+            <Border HorizontalAlignment="Left" CornerRadius="999" Padding="8,2,8,3" Background="{StaticResource CocoaSoft}">
+              <TextBlock Text="TENVPN" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource CocoaText}" />
+            </Border>
+            <TextBlock Margin="0,8,0,0" Text="Нужен не только YouTube?" FontSize="14.5" FontWeight="SemiBold" />
+            <TextBlock Margin="0,3,0,0" FontSize="12.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap"
+                       Text="ВПН нашей команды открывает всё остальное. От 7 ₽ в сутки" />
+          </StackPanel>
+        </DockPanel>
+      </Border>
+
+      <DockPanel Margin="28,14,28,16">
+        <TextBlock x:Name="VersionText" DockPanel.Dock="Right" FontSize="12" Foreground="{StaticResource MutedDeep}" />
+        <Button Style="{StaticResource LinkButton}" HorizontalAlignment="Left" Content="О программе" Click="OnAbout" />
+      </DockPanel>
+    </StackPanel>
+  </Border>
+</Window>

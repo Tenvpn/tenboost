@@ -9,10 +9,15 @@
     <UseWindowsForms>true</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\TenBoost.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Using Remove="System.Windows.Forms" />
     <Using Remove="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Шрифты брендбука (OFL), кадры Фера и значок вшиты в сборку: окно не зависит от файлов рядом. -->
+    <Resource Include="Assets\**\*" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../core/TenBoost.Core/TenBoost.Core.csproj" />

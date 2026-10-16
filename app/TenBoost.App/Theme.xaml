@@ -1,0 +1,171 @@
+<!-- Тема «Тёплая нора» из брендбука TENVPN (tenvpn-theme.css): база 70 %, тепло 20 %, лайм 10 % и только как сигнал «работает». -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Color x:Key="InkColor">#0C100E</Color>
+  <Color x:Key="AccentColor">#B6E32E</Color>
+
+  <SolidColorBrush x:Key="Ink" Color="#0C100E" />
+  <SolidColorBrush x:Key="Surface" Color="#141A17" />
+  <SolidColorBrush x:Key="Elevated" Color="#1D2521" />
+  <SolidColorBrush x:Key="Border" Color="#12FFFFFF" />
+  <SolidColorBrush x:Key="BorderStrong" Color="#21FFFFFF" />
+  <SolidColorBrush x:Key="Accent" Color="#B6E32E" />
+  <SolidColorBrush x:Key="AccentPress" Color="#93BD16" />
+  <SolidColorBrush x:Key="AccentSoft" Color="#1FB6E32E" />
+  <SolidColorBrush x:Key="Cream" Color="#F2E6C8" />
+  <SolidColorBrush x:Key="Cocoa" Color="#A9714A" />
+  <SolidColorBrush x:Key="CocoaText" Color="#D9A87E" />
+  <SolidColorBrush x:Key="CocoaSoft" Color="#29A9714A" />
+  <SolidColorBrush x:Key="Text" Color="#E8EDE6" />
+  <SolidColorBrush x:Key="Muted" Color="#8A968D" />
+  <SolidColorBrush x:Key="MutedDeep" Color="#6E7A72" />
+  <SolidColorBrush x:Key="Warn" Color="#FFB245" />
+  <SolidColorBrush x:Key="WarnSoft" Color="#1AFFB245" />
+  <SolidColorBrush x:Key="Danger" Color="#FF6B5E" />
+  <SolidColorBrush x:Key="DangerSoft" Color="#1AFF6B5E" />
+
+  <FontFamily x:Key="Display">pack://application:,,,/Assets/Fonts/#Geologica</FontFamily>
+  <FontFamily x:Key="Body">pack://application:,,,/Assets/Fonts/#Onest</FontFamily>
+  <FontFamily x:Key="Data">Cascadia Mono, Consolas</FontFamily>
+
+  <CornerRadius x:Key="Radius">18</CornerRadius>
+  <CornerRadius x:Key="RadiusSm">12</CornerRadius>
+
+  <Style x:Key="FocusRing">
+    <Setter Property="Control.Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Border Margin="-3" CornerRadius="16" BorderBrush="{StaticResource Accent}" BorderThickness="2" />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Первичная кнопка: одна на экран, лаймовая заливка. -->
+  <Style x:Key="PrimaryButton" TargetType="Button">
+    <Setter Property="Foreground" Value="{StaticResource Ink}" />
+    <Setter Property="Background" Value="{StaticResource Accent}" />
+    <Setter Property="FontFamily" Value="{StaticResource Body}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="Height" Value="50" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="Box" CornerRadius="14" Background="{TemplateBinding Background}">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="Box" Property="Background" Value="{StaticResource AccentPress}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="Box" Property="Opacity" Value="0.45" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Остальные кнопки контурные. -->
+  <Style x:Key="OutlineButton" TargetType="Button">
+    <Setter Property="Foreground" Value="{StaticResource Text}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{StaticResource BorderStrong}" />
+    <Setter Property="FontFamily" Value="{StaticResource Body}" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Height" Value="44" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="Box" CornerRadius="14" Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Box" Property="Background" Value="{StaticResource Surface}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="Box" Property="Background" Value="{StaticResource Elevated}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="Box" Property="Opacity" Value="0.45" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Кнопки заголовка окна: свернуть, закрыть в трей. -->
+  <Style x:Key="ChromeButton" TargetType="Button">
+    <Setter Property="Foreground" Value="{StaticResource Muted}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Width" Value="36" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+    <Setter Property="FontSize" Value="10" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="Box" CornerRadius="8" Background="{TemplateBinding Background}">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Box" Property="Background" Value="{StaticResource Elevated}" />
+              <Setter Property="Foreground" Value="{StaticResource Text}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Текстовая ссылка. -->
+  <Style x:Key="LinkButton" TargetType="Button">
+    <Setter Property="Foreground" Value="{StaticResource Muted}" />
+    <Setter Property="FontFamily" Value="{StaticResource Body}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <ContentPresenter x:Name="Text" />
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter Property="Foreground" Value="{StaticResource Text}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="Lime" TargetType="ProgressBar">
+    <Setter Property="Height" Value="6" />
+    <Setter Property="Foreground" Value="{StaticResource Accent}" />
+    <Setter Property="Background" Value="{StaticResource Elevated}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ProgressBar">
+          <Grid>
+            <Border x:Name="PART_Track" CornerRadius="3" Background="{TemplateBinding Background}" />
+            <Border x:Name="PART_Indicator" CornerRadius="3" Background="{TemplateBinding Foreground}" HorizontalAlignment="Left" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

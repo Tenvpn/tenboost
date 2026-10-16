@@ -7,6 +7,7 @@ TenBoost — оболочка. Движок и драйвер не наши, и 
 | zapret2: `winws2.exe`, Lua-библиотеки, фейки, фильтры WinDivert | [bol-van/zapret2](https://github.com/bol-van/zapret2), релизный архив тега из `bin/manifest.json` | MIT, © 2016-2026 bol-van | `licenses\zapret2-LICENSE.txt` (копия `engine/docs/LICENSE.txt`) |
 | WinDivert: `WinDivert.dll`, `WinDivert64.sys` | в составе релиза zapret2; апстрим — [basil00/WinDivert](https://github.com/basil00/WinDivert) | LGPLv3 или GPLv2 на выбор | `licenses\WinDivert-LICENSE.txt` (тексты LGPLv3, GPLv3, GPLv2 внутри) |
 | Cygwin: `cygwin1.dll` | в составе релиза zapret2 | LGPLv3 | `licenses\LGPL-3.0.txt` и `licenses\GPL-3.0.txt` (LGPLv3 ссылается на GPLv3) |
+| Шрифты Geologica и Onest: `app/TenBoost.App/Assets/Fonts/` (вшиты в `TenBoost.exe`) | Google Fonts; апстрим — [monokromskriftforlag/geologisk](https://github.com/monokromskriftforlag/geologisk), [googlefonts/onest](https://github.com/googlefonts/onest) | SIL OFL 1.1 | `licenses\Geologica-OFL.txt`, `licenses\Onest-OFL.txt` |
 | Хостлист YouTube `lists/youtube.txt` | [bol-van/zapret-win-bundle](https://github.com/bol-van/zapret-win-bundle) `6eb463a`, `zapret-winws/files/list-youtube.txt` | — | — |
 
 Движок не модифицируется: сабмодуль `engine/` закреплён на релизном теге, бинарники берутся из релизного архива этого тега с проверкой SHA256.

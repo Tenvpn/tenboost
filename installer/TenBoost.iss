@@ -47,7 +47,10 @@ Source: "{#Payload}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs cr
 Name: "{commonappdata}\TenBoost"
 
 [Registry]
-Root: HKLM; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "TenBoost"; ValueData: """{app}\TenBoost.exe"""; Flags: uninsdeletevalue
+Root: HKLM; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "TenBoost"; ValueData: """{app}\TenBoost.exe"" --tray"; Flags: uninsdeletevalue
+
+[Icons]
+Name: "{autoprograms}\TenBoost"; Filename: "{app}\TenBoost.exe"
 
 [Run]
 Filename: "{app}\TenBoost.exe"; Flags: nowait runasoriginaluser
