@@ -197,6 +197,7 @@ public sealed class EngineSupervisor(InstallLayout layout, NetworkProbe probe, I
     /// <summary>Запускает winws2 с одной стратегией и возвращает процесс. Владение процессом — на вызывающем.</summary>
     private Process LaunchEngine(Strategy strategy)
     {
+        StaleDriver.RemoveIfBroken(logger);
         var startInfo = new ProcessStartInfo
         {
             FileName = layout.Winws2Exe,
