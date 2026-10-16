@@ -184,7 +184,7 @@ public sealed class EngineSupervisor(InstallLayout layout, NetworkProbe probe, I
         }
         catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException)
         {
-            Fail($"winws2 не запустился: {e.Message}");
+            Fail($"движок не запустился: {e.Message}");
         }
     }
 
@@ -350,7 +350,7 @@ public sealed class EngineSupervisor(InstallLayout layout, NetworkProbe probe, I
 
         if (_failures.Count >= MaxFailures)
         {
-            Fail($"winws2 падает: {MaxFailures} раза за {FailureWindow.TotalMinutes:0} минут. Перезапуск — кнопкой «Включить»");
+            Fail($"движок упал {MaxFailures} раза за {FailureWindow.TotalMinutes:0} минут");
             return;
         }
 

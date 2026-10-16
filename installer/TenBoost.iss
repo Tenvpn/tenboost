@@ -196,7 +196,7 @@ begin
     Sc('config ' + ServiceName + ' binPath= ' + BinPath + ' start= auto')
   else
     Sc('create ' + ServiceName + ' binPath= ' + BinPath + ' start= auto obj= LocalSystem DisplayName= "TenBoost"');
-  Sc('description ' + ServiceName + ' "Ускоритель YouTube и Discord: запускает движок zapret2 с выбранной стратегией"');
+  Sc('description ' + ServiceName + ' "Ускоритель YouTube и Discord"');
   Sc('failure ' + ServiceName + ' reset= 86400 actions= restart/5000/restart/30000/restart/60000');
   Sc('start ' + ServiceName);
 end;

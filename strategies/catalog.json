@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "version": "2026.10.09.1",
+  "version": "2026.10.16.1",
   "default": "preset2_example",
   "strategies": [
     {
       "id": "preset2_example",
-      "title": "Базовый пресет zapret2: YouTube TCP и QUIC, Discord",
+      "title": "Стандартная",
       "source": "bol-van/zapret-win-bundle@6eb463a zapret-winws/preset2_example.cmd",
       "targets": ["youtube_tcp", "youtube_quic", "discord"],
       "args": [
