@@ -22,12 +22,24 @@ public sealed class NetworkProbe(ILogger<NetworkProbe> logger)
             ["discord"] = ("https://discord.com/api/v10/gateway", HttpVersion.Version11),
         };
 
-    public async Task<bool> ProbeAsync(string target, CancellationToken ct)
+    /// <summary>
+    /// HTTP/3 в .NET идёт через msquic, а он есть только с Windows 11 / Server 2022 (сборка 20348).
+    /// На Windows 10 проба QUIC проваливалась бы всегда, и подбор не мог бы набрать все цели.
+    /// </summary>
+    private static readonly bool QuicAvailable = OperatingSystem.IsWindowsVersionAtLeast(10, 0, 20348);
+
+    /// <summary>true — цель открылась, false — нет, null — проверить нельзя на этой системе (не засчитывается никак).</summary>
+    public async Task<bool?> ProbeAsync(string target, CancellationToken ct)
     {
         if (!Endpoints.TryGetValue(target, out var endpoint))
         {
             logger.LogWarning("нет пробы для цели {Target}", target);
             return false;
+        }
+
+        if (endpoint.Http == HttpVersion.Version30 && !QuicAvailable)
+        {
+            return null;
         }
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);

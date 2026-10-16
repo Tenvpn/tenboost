@@ -284,7 +284,9 @@ public sealed class EngineSupervisor(InstallLayout layout, NetworkProbe probe, I
                 SetPick(new PickProgress(i, order.Count, strategy.Title));
                 var result = await ProbeStrategy(strategy, ct);
                 results.Add(result);
-                logger.LogInformation("подбор: {Id} — открыто {Passed}/{Total}", strategy.Id, result.Passed.Count, strategy.Targets.Count);
+                logger.LogInformation("подбор: {Id} — открыто {Passed}/{Total}, не открылось: {Failed}",
+                    strategy.Id, result.Passed.Count, result.Passed.Count + result.Failed.Count,
+                    result.Failed.Count == 0 ? "—" : string.Join(", ", result.Failed));
                 if (result.CoversAll)
                 {
                     break;
@@ -300,7 +302,7 @@ public sealed class EngineSupervisor(InstallLayout layout, NetworkProbe probe, I
         var chosen = best?.Strategy.Id ?? catalog.Default;
         var message = best is null
             ? "ни одна стратегия не открыла цели — провайдер режет не по DPI; ставлю стратегию по умолчанию"
-            : $"подобрана «{best.Strategy.Title}»: открыто {best.Passed.Count} из {best.Strategy.Targets.Count}";
+            : $"подобрана «{best.Strategy.Title}»: открыто {best.Passed.Count} из {best.Passed.Count + best.Failed.Count}";
         logger.LogInformation("подбор завершён: {Chosen}", chosen);
 
         lock (_gate)
@@ -330,13 +332,14 @@ public sealed class EngineSupervisor(InstallLayout layout, NetworkProbe probe, I
             var failed = new List<string>();
             foreach (var target in strategy.Targets)
             {
-                if (await probe.ProbeAsync(target, ct))
+                switch (await probe.ProbeAsync(target, ct))
                 {
-                    passed.Add(target);
-                }
-                else
-                {
-                    failed.Add(target);
+                    case true:
+                        passed.Add(target);
+                        break;
+                    case false:
+                        failed.Add(target);
+                        break;
                 }
             }
 

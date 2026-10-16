@@ -10,3 +10,8 @@ discord.new
 discord.gift
 discordstatus.com
 dis.gd
+discord-attachments-uploads-prd.storage.googleapis.com
+discord.app
+discordsays.com
+discordactivities.com
+discord.status
