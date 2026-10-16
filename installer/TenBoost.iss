@@ -212,10 +212,21 @@ begin
   Sc('start ' + ServiceName);
 end;
 
+{ Рабочие стратегии для Discord подделывают метку времени TCP (tcp_ts): без включённых меток
+  Windows их не ставит, и фейк уходит без защиты. На чистой Windows они выключены; Flowseal
+  включает их так же. Обратно не выключаем: другие обходчики на этом компьютере тоже на них рассчитывают. }
+procedure EnableTcpTimestamps;
+begin
+  RunHidden(ExpandConstant('{sys}\netsh.exe'), 'int tcp set global timestamps=enabled');
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then
+  begin
+    EnableTcpTimestamps;
     RegisterService;
+  end;
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);

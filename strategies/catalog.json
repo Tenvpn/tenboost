@@ -1,19 +1,19 @@
 {
   "schema": 1,
-  "version": "2026.10.16.2",
-  "default": "preset2_example",
+  "version": "2026.10.16.3",
+  "default": "hostfakesplit_ts",
   "strategies": [
     {
-      "id": "preset2_example",
+      "id": "hostfakesplit_ts",
       "title": "Стандартная",
-      "source": "bol-van/zapret-win-bundle@6eb463a zapret-winws/preset2_example.cmd",
+      "source": "TenBoost: «Стандартная» для YouTube + профиль Discord по мотивам Flowseal zapret-discord-youtube 1.10.3; стенд tools/try_strategies.ps1 16.10.2026 — 10/10 (hostfakesplit, tcp_ts)",
       "targets": [
         "youtube_tcp",
         "youtube_quic",
         "discord"
       ],
       "args": [
-        "--wf-tcp-out=80,443",
+        "--wf-tcp-out=80,443,2053,2083,2087,2096,8443",
         "--lua-init=@{lua:zapret-lib.lua}",
         "--lua-init=@{lua:zapret-antidpi.lua}",
         "--lua-init=fake_default_tls = tls_mod(fake_default_tls,'rnd,rndsni')",
@@ -22,6 +22,8 @@
         "--wf-raw-part=@{filter:windivert_part.stun.txt}",
         "--wf-raw-part=@{filter:windivert_part.wireguard.txt}",
         "--wf-raw-part=@{filter:windivert_part.quic_initial_ietf.txt}",
+        "--blob=tls_google:@{fake:tls_clienthello_www_google_com.bin}",
+        "--blob=tls_vk:@{fake:tls_clienthello_vk_com.bin}",
         "--filter-tcp=80",
         "--filter-l7=http",
         "--out-range=-d10",
@@ -36,6 +38,13 @@
         "--payload=tls_client_hello",
         "--lua-desync=fake:blob=fake_default_tls:tcp_md5:repeats=11:tls_mod=rnd,dupsid,sni=www.google.com",
         "--lua-desync=multidisorder:pos=1,midsld",
+        "--new",
+        "--filter-tcp=443,2053,2083,2087,2096,8443",
+        "--filter-l7=tls",
+        "--hostlist={list:discord.txt}",
+        "--out-range=-d10",
+        "--payload=tls_client_hello",
+        "--lua-desync=hostfakesplit:host=www.google.com:tcp_ts=-600000:repeats=4",
         "--new",
         "--filter-tcp=443",
         "--filter-l7=tls",
@@ -57,13 +66,13 @@
         "--new",
         "--filter-l7=wireguard,stun,discord",
         "--payload=wireguard_initiation,wireguard_cookie,stun,discord_ip_discovery",
-        "--lua-desync=fake:blob=0x00000000000000000000000000000000:repeats=2"
+        "--lua-desync=fake:blob=quic_google:repeats=6"
       ]
     },
     {
-      "id": "discord_md5_disorder",
+      "id": "fake_ts_seqovl",
       "title": "Усиленная",
-      "source": "TenBoost: «Стандартная» + профиль доменов Discord и портов медиа 2053–8443, по мотивам Flowseal zapret-discord-youtube 1.9.5 general.bat",
+      "source": "TenBoost: «Стандартная» для YouTube + профиль Discord по мотивам Flowseal zapret-discord-youtube 1.10.3; стенд tools/try_strategies.ps1 16.10.2026 — 9/10 (fake tcp_ts + multisplit seqovl=681)",
       "targets": [
         "youtube_tcp",
         "youtube_quic",
@@ -101,8 +110,8 @@
         "--hostlist={list:discord.txt}",
         "--out-range=-d10",
         "--payload=tls_client_hello",
-        "--lua-desync=fake:blob=fake_default_tls:tcp_md5:repeats=6:tls_mod=rnd,dupsid,sni=www.google.com",
-        "--lua-desync=multidisorder:pos=1,midsld",
+        "--lua-desync=fake:blob=tls_google:tcp_ts=-600000:repeats=8",
+        "--lua-desync=multisplit:pos=1:seqovl=681:seqovl_pattern=tls_google",
         "--new",
         "--filter-tcp=443",
         "--filter-l7=tls",
@@ -124,13 +133,13 @@
         "--new",
         "--filter-l7=wireguard,stun,discord",
         "--payload=wireguard_initiation,wireguard_cookie,stun,discord_ip_discovery",
-        "--lua-desync=fake:blob=0x00000000000000000000000000000000:repeats=2"
+        "--lua-desync=fake:blob=quic_google:repeats=6"
       ]
     },
     {
-      "id": "discord_badseq_fakedsplit",
+      "id": "fake_ts_fakedsplit",
       "title": "Усиленная, запасная",
-      "source": "TenBoost: «Стандартная» + профиль доменов Discord и портов медиа 2053–8443, по мотивам Flowseal zapret-discord-youtube 1.9.5 general.bat",
+      "source": "TenBoost: «Стандартная» для YouTube + профиль Discord по мотивам Flowseal zapret-discord-youtube 1.10.3; стенд tools/try_strategies.ps1 16.10.2026 — 9/10 (fake tcp_ts + fakedsplit)",
       "targets": [
         "youtube_tcp",
         "youtube_quic",
@@ -168,8 +177,8 @@
         "--hostlist={list:discord.txt}",
         "--out-range=-d10",
         "--payload=tls_client_hello",
-        "--lua-desync=fake:blob=tls_vk:tcp_seq=-10000:tcp_ack=-66000:repeats=6",
-        "--lua-desync=fakedsplit:pos=1:tcp_seq=-10000:tcp_ack=-66000",
+        "--lua-desync=fake:blob=tls_google:tcp_ts=-600000:repeats=6",
+        "--lua-desync=fakedsplit:pos=2:pattern=0x00:tcp_ts=-600000:repeats=6",
         "--new",
         "--filter-tcp=443",
         "--filter-l7=tls",
@@ -191,13 +200,13 @@
         "--new",
         "--filter-l7=wireguard,stun,discord",
         "--payload=wireguard_initiation,wireguard_cookie,stun,discord_ip_discovery",
-        "--lua-desync=fake:blob=0x00000000000000000000000000000000:repeats=2"
+        "--lua-desync=fake:blob=quic_google:repeats=6"
       ]
     },
     {
       "id": "discord_autottl_split",
       "title": "Мягкая",
-      "source": "TenBoost: «Стандартная» + профиль доменов Discord и портов медиа 2053–8443, по мотивам Flowseal zapret-discord-youtube 1.9.5 general.bat",
+      "source": "TenBoost: «Стандартная» + профиль доменов Discord и портов медиа 2053–8443, по мотивам Flowseal zapret-discord-youtube 1.9.5 general.bat; стенд 16.10: 9/10, без меток времени TCP, нестабильна",
       "targets": [
         "youtube_tcp",
         "youtube_quic",
@@ -237,6 +246,63 @@
         "--payload=tls_client_hello",
         "--lua-desync=fake:blob=tls_google:ip_autottl=-2,3-20:ip6_autottl=-2,3-20:repeats=6",
         "--lua-desync=multisplit:pos=1,midsld",
+        "--new",
+        "--filter-tcp=443",
+        "--filter-l7=tls",
+        "--out-range=-d10",
+        "--payload=tls_client_hello",
+        "--lua-desync=fake:blob=fake_default_tls:tcp_md5:tcp_seq=-10000:repeats=6",
+        "--lua-desync=multidisorder:pos=midsld",
+        "--new",
+        "--filter-udp=443",
+        "--filter-l7=quic",
+        "--hostlist={list:youtube.txt}",
+        "--payload=quic_initial",
+        "--lua-desync=fake:blob=quic_google:repeats=11",
+        "--new",
+        "--filter-udp=443",
+        "--filter-l7=quic",
+        "--payload=quic_initial",
+        "--lua-desync=fake:blob=fake_default_quic:repeats=11",
+        "--new",
+        "--filter-l7=wireguard,stun,discord",
+        "--payload=wireguard_initiation,wireguard_cookie,stun,discord_ip_discovery",
+        "--lua-desync=fake:blob=0x00000000000000000000000000000000:repeats=2"
+      ]
+    },
+    {
+      "id": "preset2_example",
+      "title": "Классическая",
+      "source": "bol-van/zapret-win-bundle@6eb463a zapret-winws/preset2_example.cmd; Discord не открывает",
+      "targets": [
+        "youtube_tcp",
+        "youtube_quic",
+        "discord"
+      ],
+      "args": [
+        "--wf-tcp-out=80,443",
+        "--lua-init=@{lua:zapret-lib.lua}",
+        "--lua-init=@{lua:zapret-antidpi.lua}",
+        "--lua-init=fake_default_tls = tls_mod(fake_default_tls,'rnd,rndsni')",
+        "--blob=quic_google:@{fake:quic_initial_www_google_com.bin}",
+        "--wf-raw-part=@{filter:windivert_part.discord_media.txt}",
+        "--wf-raw-part=@{filter:windivert_part.stun.txt}",
+        "--wf-raw-part=@{filter:windivert_part.wireguard.txt}",
+        "--wf-raw-part=@{filter:windivert_part.quic_initial_ietf.txt}",
+        "--filter-tcp=80",
+        "--filter-l7=http",
+        "--out-range=-d10",
+        "--payload=http_req",
+        "--lua-desync=fake:blob=fake_default_http:ip_autottl=-2,3-20:ip6_autottl=-2,3-20:tcp_md5",
+        "--lua-desync=fakedsplit:ip_autottl=-2,3-20:ip6_autottl=-2,3-20:tcp_md5",
+        "--new",
+        "--filter-tcp=443",
+        "--filter-l7=tls",
+        "--hostlist={list:youtube.txt}",
+        "--out-range=-d10",
+        "--payload=tls_client_hello",
+        "--lua-desync=fake:blob=fake_default_tls:tcp_md5:repeats=11:tls_mod=rnd,dupsid,sni=www.google.com",
+        "--lua-desync=multidisorder:pos=1,midsld",
         "--new",
         "--filter-tcp=443",
         "--filter-l7=tls",
